@@ -1,0 +1,9 @@
+Natalie Alvarez (nalvare1)
+Lab 6: Scheme Interpreter
+
+
+Milestones.txt
+
+I am not entirely sure on what should go in the Mielstones or Report file, so I am going to list my goals for this lab in Milestones.
+
+1) 

@@ -1,0 +1,8 @@
+Natalie Alvarez (nalvare1)
+Lab 6: Scheme Interpreter
+
+Report.txt
+
+Timelog:
+
+In lab, 
