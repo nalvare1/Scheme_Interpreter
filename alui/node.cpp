@@ -30,7 +30,7 @@ ostream& operator<<(ostream &os, Node &n){
 	if(n.right){
 		os << ", right=" << *n.right;
 	}
-	os << ")" << endl;
+	os << ")";
 	return os;
 }
 
