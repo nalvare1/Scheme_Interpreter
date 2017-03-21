@@ -4,17 +4,17 @@
 #include<sstream>
 #include<string>
 #include<cstring>
-#include<stack>
+#include <stack>
 #include "node.h"
 using namespace std;
 
 bool isParenOrOperator(char);
+bool isAlpha(char);
 bool isNumber(char);
 string parse_token(istream&);
 Node* parse_expression(istream&);
 void usage();
 void evaluate_r(const Node *n, stack<string> &s);
-
 int main(int argc, char* argv[]){
 	bool batchMode = false;
 	bool debugMode = false;
@@ -59,11 +59,11 @@ int main(int argc, char* argv[]){
 		stringstream s(line);
 		Node* syntaxtree = parse_expression(s);
 		if(debugMode){
-			cout << *syntaxtree << endl;
+			cout << *syntaxtree;
 		}
 		stack<string> result;
-		evaluate_r(syntaxtree, result);
-		cout << result.top() << endl;
+		evaluate_r(syntaxtree,result);
+		cout<<result.top()<<endl;
 	}
 
 	return 0;
@@ -76,6 +76,12 @@ string parse_token(istream &is){
 	}
 	if(isParenOrOperator(is.peek())){
 		token = is.get();
+	}if(isAlpha(is.peek())){
+		//check to see which function
+		while(isAlpha(is.peek())) {
+			string theFunc;
+			theFunc += is.get();
+		}
 	}else if(isdigit(is.peek())){
 		token = is.get();
 		while(isNumber(is.peek())){
@@ -111,7 +117,11 @@ bool isParenOrOperator(char c){
 }
 
 bool isNumber(char c){
-	return ( (c>='0' && c<='9') || c=='.' );
+	return ( c>='0' && c<='9' );
+}
+
+bool isAlpha(char c) {
+	return (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z');
 }
 
 void usage(){
@@ -121,36 +131,37 @@ void usage(){
 }
 
 void evaluate_r(const Node *n, stack<string> &s){
-	if(n->left){
-		evaluate_r(n->left, s); 
-	}   
-	if(n->right){
-		evaluate_r(n->right, s); 
-	}   
-	if(!n->left && !n->right){
-		s.push(n->value);
-	}else{
-		float n1, n2;
-		n1 = stod(s.top());
-		s.pop();
-		n2 = stod(s.top());
-		s.pop();
-		switch(n->value.c_str()[0]){
-			case '+':
-				s.push(to_string(n1+n2));
-				break;
-			case '-':
-				s.push(to_string(n2-n1));
-				break;
-			case '*':
-				s.push(to_string(n1*n2));
-				break;
-			case '/':
-				s.push(to_string(n2/n1));
-				break;
-			default:
-				cout << "Error: invalid operator" << endl;
-				break;
-		}   
-	}   
+  	if(n->left){
+  		evaluate_r(n->left, s);
+  	}
+  	if(n->right){
+		evaluate_r(n->right, s);
+  	}
+ 	if(!n->left && !n->right){
+ 		s.push(n->value);
+  	}else{
+   		float n1, n2;
+    	n1 = stod(s.top());
+    	s.pop();
+     	n2 = stod(s.top());
+   		s.pop();
+ 		switch(n->value.c_str()[0]){
+        	case '+':
+        		s.push(to_string(n1+n2));
+                break;
+        	case '-':
+            	s.push(to_string(n2-n1));
+            	break;
+        	case '*':
+             	s.push(to_string(n1*n2));
+             	break;
+        	case '/':
+          		s.push(to_string(n2/n1));
+            	break;
+         	default:
+           		cout << "Error: invalid operator" << endl;
+          		break;
+         	}
+     	}
 }
+
