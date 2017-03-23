@@ -80,9 +80,11 @@ string parse_token(istream &is){
 		if (is.peek() == '(') {
 			is.get();
 			string printList;
+			printList += '(';
 			while (is.peek() != ')') {
 				printList += is.get();
 			}
+			printList += ')';
 			cout << printList;
 		}
 	}
@@ -200,6 +202,6 @@ void evaluate_r(const Node *n, stack<string> &s){
          	default:
            		cout << "Error: invalid operator" << endl;
           		break;
-         	}
-     	}
+         }
+     }
 }
