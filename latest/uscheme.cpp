@@ -3,6 +3,7 @@
 #include<string>
 #include<cstring>
 #include<stack>
+#include<cmath>
 #include "node.h"
 using namespace std;
 
@@ -147,9 +148,9 @@ bool isParenOrOperator(char c){
 bool isNumber(char c){ //includes period in order to include floats
 	return ( (c>='0' && c<='9') || c=='.' );
 }
-
+//Kelly
 bool isMathFunc(string func){ //Will eventually include other math functions
-	return ( func == "+" || func == "-" || func == "*" || func == "/" );
+	return ( func == "+" || func == "-" || func == "*" || func == "/" || func == "sqrt");
 }
 
 bool isApostrophe(char c) {
@@ -184,7 +185,7 @@ void evaluate_r(const Node *n, stack<string> &s){
 		}else if(func=="some other func"){
 			//call some other func
 		}
-	}   
+	}
 }
 
 void mathEval(string func, int nargs, stack<string> &s){
@@ -193,7 +194,7 @@ void mathEval(string func, int nargs, stack<string> &s){
 		args.push_back(stod(s.top())); //add typecasted arg to args vector from top of stack
 		s.pop(); //remove arg from stack
 	}
-	int result; //does int math for now (regardless of input), we might change to float
+	float result; //does int math for now (regardless of input), we might change to float
 	if(func=="+"){
 		result = 0;
 		for(size_t i=0; i<args.size(); i++){
@@ -217,6 +218,11 @@ void mathEval(string func, int nargs, stack<string> &s){
 		for(int i=args.size()-2; i>=0; i--){ //backwards will be order of input - important for non-commutative function
 			result /= args[i];
 		}
+		s.push(to_string(result));
+	}else if(func=="sqrt"){
+		if(args.size()>1) cout<<"Too many arguments"<<endl;
+		result = args[0];
+		result = sqrt(result);
 		s.push(to_string(result));
 	}else{
 		cout << "Error: unrecognized math function" << endl;
