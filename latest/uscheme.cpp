@@ -4,6 +4,7 @@
 #include<cstring>
 #include<stack>
 #include<cmath>
+#include<cstdio>
 #include "node.h"
 using namespace std;
 
@@ -73,10 +74,17 @@ int main(int argc, char* argv[]){
 
 string parse_token(istream &is){
 	string token;
-	while(isspace(is.peek())){ //ignore space
+	while(isspace(is.peek()) && is.peek() != '-'){ //ignore space
 		is.get();
 	}
-	if(isParenOrOperator(is.peek())){ //get one character if parenthesis or operator
+	if(is.peek()=='-'){ //decide if negative or subtraction if negative sign encountered
+		token = is.get();
+		if(isdigit(is.peek())){
+			while(isNumber(is.peek())){
+				token += is.get();
+			}
+		}
+	}else if(isParenOrOperator(is.peek())){ //get one character if parenthesis or operator
 		token = is.get();
 	}else if(isApostrophe(is.peek())){ //implements quote function
 		is.get(); //Don't include apostrophe
@@ -150,7 +158,7 @@ bool isNumber(char c){ //includes period in order to include floats
 }
 //Kelly
 bool isMathFunc(string func){ //Will eventually include other math functions
-	return ( func == "+" || func == "-" || func == "*" || func == "/" || func == "sqrt");
+	return ( func == "+" || func == "-" || func == "*" || func == "/" || func == "sqrt" || func == "remainder" || func=="truncate");
 }
 
 bool isApostrophe(char c) {
@@ -191,7 +199,16 @@ void evaluate_r(const Node *n, stack<string> &s){
 void mathEval(string func, int nargs, stack<string> &s){
 	vector<float> args;
 	for(int i=0; i<nargs; i++){
-		args.push_back(stod(s.top())); //add typecasted arg to args vector from top of stack
+		bool negative = false;
+		if(s.top()[0] == '-'){
+			s.top()[0] = '0';
+			negative = true;
+		}
+		if(negative){
+			args.push_back((-1)*stod(s.top())); //add typecasted arg to args vector from top of stack
+		}else{
+			args.push_back(stod(s.top())); //add typecasted arg to args vector from top of stack
+		}
 		s.pop(); //remove arg from stack
 	}
 	float result; //does int math for now (regardless of input), we might change to float
@@ -220,10 +237,30 @@ void mathEval(string func, int nargs, stack<string> &s){
 		}
 		s.push(to_string(result));
 	}else if(func=="sqrt"){
-		if(args.size()>1) cout<<"Too many arguments"<<endl;
-		result = args[0];
-		result = sqrt(result);
-		s.push(to_string(result));
+		if(args.size()>1){
+			cout<<"Too many arguments"<<endl;
+			s.push("Error");
+		}else{
+			result = args[0];
+			result = sqrt(result);
+			s.push(to_string(result));
+		}
+	}else if(func =="remainder") {
+		result = 0;
+		if(args.size() > 2) {
+			cout << "Too many arguments" << endl;
+			s.push("Error");
+		} else {
+			result = (int) args[1] % (int) args[0];
+			s.push(to_string(result));	
+		}
+	}else if(func == "truncate") {
+		if(args.size() > 1) {
+			s.push("Error");
+			cout << "Too many arguments" << endl;
+		} else {
+			s.push(to_string(trunc(args[0])));
+		}
 	}else{
 		cout << "Error: unrecognized math function" << endl;
 		s.push("Error"); //if an error occurs push the word "Error" to the stack to avoid trying to access an empty stack in main
