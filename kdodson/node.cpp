@@ -3,34 +3,32 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include "node.h"
 using namespace std;
 
-Node::Node(string val, Node * leftptr, Node * rightptr){
+Node::Node(string val, vector<Node*> chldrn){
 	value = val;
-	left = leftptr;
-	right = rightptr;
+	children = chldrn;
 }
 
 Node::~Node(){
-	if(left){
-		delete left;
-	}
-	if(right){
-		delete right;
+	for(size_t i=0; i<children.size(); i++){
+		if(children[i]){
+			delete children[i];
+		}
 	}
 }
 
 ostream& operator<<(ostream &os, Node &n){
 	os << "(Node: ";
 	os << "value=" << n.value;
-	if(n.left){
-		os << ", left=" << *n.left;
+	for(size_t i=0; i<n.children.size(); i++){
+		if(n.children[i]){
+			os << ", child=" << *n.children[i];
+		}
 	}
-	if(n.right){
-		os << ", right=" << *n.right;
-	}
-	os << ")" << endl;
+	os << ")";
 	return os;
 }
 

@@ -6,16 +6,16 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 using namespace std;
 
 class Node {
 	friend ostream& operator<< (ostream &, Node &);
 	public:
-		Node(string="", Node* = nullptr, Node* = nullptr);
+		Node(string="", vector<Node*> = {nullptr});
 		~Node();
 		string value;
-		Node * left;
-		Node * right;
+		vector<Node*> children;
 };
 
 #endif
