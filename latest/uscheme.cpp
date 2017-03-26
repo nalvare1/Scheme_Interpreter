@@ -156,9 +156,9 @@ bool isParenOrOperator(char c){
 bool isNumber(char c){ //includes period in order to include floats
 	return ( (c>='0' && c<='9') || c=='.' );
 }
-//Kelly
+
 bool isMathFunc(string func){ //Will eventually include other math functions
-	return ( func == "+" || func == "-" || func == "*" || func == "/" || func == "sqrt" || func == "remainder" || func=="truncate");
+	return ( func == "+" || func == "-" || func == "*" || func == "/" || func == "sqrt" || func == "remainder" || func=="floor" || func=="ceiling" || func=="truncate" || func=="round");
 }
 
 bool isApostrophe(char c) {
@@ -252,7 +252,21 @@ void mathEval(string func, int nargs, stack<string> &s){
 			s.push("Error");
 		} else {
 			result = (int) args[1] % (int) args[0];
-			s.push(to_string(result));	
+			s.push(to_string(result));
+		}
+	}else if(func == "floor") {
+		if(args.size() > 1) {
+			s.push("Error");
+			cout << "Too many arguments" << endl;
+		} else {
+			s.push(to_string(floor(args[0])));
+		}
+	}else if(func == "ceiling") {
+		if(args.size() > 1) {
+			s.push("Error");
+			cout << "Too many arguments" << endl;
+		} else {
+			s.push(to_string(ceil(args[0])));
 		}
 	}else if(func == "truncate") {
 		if(args.size() > 1) {
@@ -260,6 +274,13 @@ void mathEval(string func, int nargs, stack<string> &s){
 			cout << "Too many arguments" << endl;
 		} else {
 			s.push(to_string(trunc(args[0])));
+		}
+	}else if(func == "round") {
+		if(args.size() > 1) {
+			s.push("Error");
+			cout << "Too many arguments" << endl;
+		} else {
+			s.push(to_string(round(args[0])));
 		}
 	}else{
 		cout << "Error: unrecognized math function" << endl;
