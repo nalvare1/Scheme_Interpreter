@@ -5,6 +5,7 @@
 #include<stack>
 #include<cmath>
 #include<cstdio>
+#include<math.h>
 #include "node.h"
 using namespace std;
 
@@ -160,7 +161,8 @@ bool isNumber(char c){ //includes period in order to include floats
 bool isMathFunc(string func){ //Will eventually include other math functions
 	return ( func == "+" || func == "-" || func == "*" || func == "/"
 	|| func == "sqrt" || func == "remainder" || func=="floor" || func=="ceiling"
-	|| func=="truncate" || func=="round" || func=="expt");
+	|| func=="truncate" || func=="round" || func=="expt" || func == "sin" || func == "cos"
+	|| func == "tan" || func == "asin" || func == "acos" || func == "atan");
 }
 
 bool isApostrophe(char c) {
@@ -290,6 +292,48 @@ void mathEval(string func, int nargs, stack<string> &s){
 			cout<<"Too many arguments"<<endl;
 		} else {
 			s.push(to_string(pow((double) args[1], (double) args[0])));
+		}
+	}else if(func=="sin") {
+		if (args.size() > 1) {
+			s.push("Error");
+			cout << "Too many arguments" << endl;
+		} else {
+			s.push(to_string(sin(args[0])));
+		}
+	}else if(func == "cos") {
+		if (args.size() > 1) {
+			s.push("Error");
+			cout << "Too many arguments" << endl;
+		} else {
+			s.push(to_string(cos(args[0])));
+		}
+	}else if(func == "tan") {
+		if (args.size() > 1) {
+			s.push("Error");
+			cout << "Too many arguments" << endl;
+		} else {
+			s.push(to_string(tan(args[0])));
+		}
+	}else if(func == "asin") {
+		if (args.size() > 1) {
+			s.push("Error");
+			cout << "Too many arguments" << endl;
+		} else {
+			s.push(to_string(asin(args[0])));
+		}
+	}else if(func == "acos") {
+		if (args.size() > 1) {
+			s.push("Error");
+			cout << "Too many arguments" << endl;
+		} else {
+			s.push(to_string(acos(args[0])));
+		}
+	}else if(func == "atan") {
+		if (args.size() > 1) {
+			s.push("Error");
+			cout << "Too many arguments" << endl;
+		} else {
+			s.push(to_string(atan(args[0])));
 		}
 	}else{
 		cout << "Error: unrecognized math function" << endl;
