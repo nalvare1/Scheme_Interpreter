@@ -101,7 +101,7 @@ string parse_token(istream &is){
 		}
 		token += is.get(); //add ending ')' from stream
 	}else if(isalpha(is.peek())){ //get whole word if alpha encountered
-		while(isalpha(is.peek())){
+		while(isalpha(is.peek())||is.peek()=='?'){
 			token += is.get();
 		}
 		if(token=="quote"){ //other instance of quote func - see above instance for comments
@@ -162,7 +162,7 @@ bool isMathFunc(string func){ //Will eventually include other math functions
 	return ( func == "+" || func == "-" || func == "*" || func == "/"
 	|| func == "sqrt" || func == "remainder" || func=="floor" || func=="ceiling"
 	|| func=="truncate" || func=="round" || func=="expt" || func == "sin" || func == "cos"
-	|| func == "tan" || func == "asin" || func == "acos" || func == "atan");
+	|| func == "tan" || func == "asin" || func == "acos" || func == "atan" || func =="equal?");
 }
 
 bool isApostrophe(char c) {
@@ -334,6 +334,14 @@ void mathEval(string func, int nargs, stack<string> &s){
 			cout << "Too many arguments" << endl;
 		} else {
 			s.push(to_string(atan(args[0])));
+		}
+	}else if(func == "equal?") {
+		if(args.size() != 2) {
+			s.push("Error");
+			cout<<"Wrong number of arguments"<<endl;
+		} else {
+			if(args[0]==args[1]) s.push("#t");
+			else s.push("#f");
 		}
 	}else{
 		cout << "Error: unrecognized math function" << endl;
