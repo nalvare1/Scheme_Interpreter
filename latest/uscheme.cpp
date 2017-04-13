@@ -18,6 +18,7 @@ void evaluate_r(const Node *n, stack<string> &s);
 void mathEval(string, int, stack<string> &);
 bool isApostrophe(char);
 bool isMathFunc(string);
+int gcd_func(int, int);
 
 int main(int argc, char* argv[]){
 	bool batchMode = false; //disable prompt
@@ -162,7 +163,8 @@ bool isMathFunc(string func){ //Will eventually include other math functions
 	return ( func == "+" || func == "-" || func == "*" || func == "/"
 	|| func == "sqrt" || func == "remainder" || func=="floor" || func=="ceiling"
 	|| func=="truncate" || func=="round" || func=="expt" || func == "sin" || func == "cos"
-	|| func == "tan" || func == "asin" || func == "acos" || func == "atan" || func =="equal?");
+	|| func == "tan" || func == "asin" || func == "acos" || func == "atan" || func =="equal?"
+	|| func == "gcd" || func == "lcm");
 }
 
 bool isApostrophe(char c) {
@@ -343,8 +345,54 @@ void mathEval(string func, int nargs, stack<string> &s){
 			if(args[0]==args[1]) s.push("#t");
 			else s.push("#f");
 		}
+	} else if(func == "gcd") {
+		if(args.size() != 2) {
+			s.push("Error");
+			cout << "Too many arguments" << endl;
+		} else {
+			int gcd = gcd_func(args[0], args[1]);
+			s.push(to_string(gcd));
+		}
+	} else if(func == "lcm") {
+		if(args.size() != 2) {
+			s.push("Error");
+			cout << "Too many arguments" << endl;
+		} else {
+			int a, b, lcm, gcd;
+			a = args[0];
+			b = args[1];
+			gcd = gcd_func(a, b);
+			lcm = (a * b) / gcd;
+			s.push(to_string(lcm));
+		}
 	}else{
 		cout << "Error: unrecognized math function" << endl;
 		s.push("Error"); //if an error occurs push the word "Error" to the stack to avoid trying to access an empty stack in main
 	}
+}
+
+int gcd_func(int arg1, int arg2) {
+	int a, d, q, r;
+	arg1 = abs(arg1);
+	arg2 = abs(arg2);
+
+	if(arg1 == arg2) {
+		return arg1;
+	}
+	if(arg1 > arg2) {
+		d = arg1;
+		r = arg2;
+	} else if(arg1 < arg2) {
+		d = arg2;
+		r = arg1;
+	}
+	while (r != 0) {
+		a = d;
+		d = r;
+		//a = d*q + r
+		q = floor(a/d);
+		r = a - d*q;
+	}
+	//last d is the gcd!!
+	return d;
 }
