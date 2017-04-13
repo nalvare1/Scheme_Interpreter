@@ -5,6 +5,7 @@
 #include<stack>
 #include<cmath>
 #include<cstdio>
+#include<stdlib.h>
 #include<math.h>
 #include "node.h"
 using namespace std;
@@ -186,6 +187,7 @@ void evaluate_r(const Node *n, stack<string> &s){
 		}
 	}
 	if(nchildren==0){ //if the node has no children its value is not an operator/function
+		if(n->value=="exit") exit(EXIT_SUCCESS);
 		s.push(n->value);
 	}else{
 		string func = n->value;
