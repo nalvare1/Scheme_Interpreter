@@ -165,7 +165,7 @@ bool isMathFunc(string func){ //Will eventually include other math functions
 	|| func == "sqrt" || func == "remainder" || func=="floor" || func=="ceiling"
 	|| func=="truncate" || func=="round" || func=="expt" || func == "sin" || func == "cos"
 	|| func == "tan" || func == "asin" || func == "acos" || func == "atan" || func =="equal?"
-	|| func == "gcd" || func == "lcm");
+	|| func == "gcd" || func == "lcm" || func == "quotient");
 }
 
 bool isApostrophe(char c) {
@@ -367,6 +367,12 @@ void mathEval(string func, int nargs, stack<string> &s){
 			lcm = (a * b) / gcd;
 			s.push(to_string(lcm));
 		}
+	}else if(func == "quotient"){
+		int res = args.back();
+		for(int i=args.size()-2; i>=0; i--){
+			res /= args[i];
+		}
+		s.push(to_string(res));
 	}else{
 		cout << "Error: unrecognized math function" << endl;
 		s.push("Error"); //if an error occurs push the word "Error" to the stack to avoid trying to access an empty stack in main
