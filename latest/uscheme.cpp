@@ -180,7 +180,8 @@ bool isMathFunc(string func){ //Will eventually include other math functions
 	|| func=="truncate" || func=="round" || func=="expt" || func == "sin" || func == "cos"
 	|| func == "tan" || func == "asin" || func == "acos" || func == "atan" || func =="equal?"
 	|| func == "gcd" || func == "lcm" || func == "quotient" || func == "log"
-	|| func == "positive?" || func == "negative?" || func=="zero?");
+	|| func == "positive?" || func == "negative?" || func=="zero?" || func == "odd?"
+	|| func == "even?");
 }
 
 bool isApostrophe(char c) {
@@ -418,6 +419,7 @@ void mathEval(string func, int nargs, stack<string> &s){
 		} else if(args[0]==0 || args[0]>0) {
 			s.push("#f");
 		}
+
 	}else if(func == "zero?") {
 		if(args.size()>1) {
 			s.push("Error");
@@ -425,6 +427,28 @@ void mathEval(string func, int nargs, stack<string> &s){
 		} else if(args[0]==0) {
 			s.push("#t");
 		} else if(args[0]!=0) {
+			s.push("#f");
+		}
+	}else if(func == "odd?") {
+		if(args.size()>1) {
+			s.push("Error");
+			cout<<"Too many arguments."<<endl;
+		} else if(floor(args[0])!=args[0]){
+			s.push("#f");
+		} else if((int)args[0] % 2 != 0) {
+			s.push("#t");
+		} else {
+			s.push("#f");
+		}
+	}else if(func == "even?") {
+		if(args.size()>1 || floor(args[0])!=args[0]) {
+			s.push("Error");
+			cout<<"Too many arguments."<<endl;
+		} else if(floor(args[0])!=args[0]){
+			s.push("#f");
+		} else if((int)args[0] % 2 == 0) {
+			s.push("#t");
+		} else {
 			s.push("#f");
 		}
 	}else{
