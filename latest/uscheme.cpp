@@ -179,7 +179,8 @@ bool isMathFunc(string func){ //Will eventually include other math functions
 	|| func == "sqrt" || func == "remainder" || func=="floor" || func=="ceiling"
 	|| func=="truncate" || func=="round" || func=="expt" || func == "sin" || func == "cos"
 	|| func == "tan" || func == "asin" || func == "acos" || func == "atan" || func =="equal?"
-	|| func == "gcd" || func == "lcm" || func == "quotient" || func == "log");
+	|| func == "gcd" || func == "lcm" || func == "quotient" || func == "log"
+	|| func == "positive?" || func == "negative?" || func=="zero?");
 }
 
 bool isApostrophe(char c) {
@@ -398,6 +399,33 @@ void mathEval(string func, int nargs, stack<string> &s){
 		}else{
 			double res = log(args[0]);
 			s.push(to_string(res));
+		}
+	}else if(func == "positive?") {
+		if(args.size()>1) {
+			s.push("Error");
+			cout<<"Too many arguments."<<endl;
+		} else if(args[0]>0) {
+			s.push("#t");
+		} else if(args[0]==0 || args[0]<0) {
+			s.push("#f");
+		}
+	}else if(func == "negative?") {
+		if(args.size()>1) {
+			s.push("Error");
+			cout<<"Too many arguments."<<endl;
+		} else if(args[0]<0) {
+			s.push("#t");
+		} else if(args[0]==0 || args[0]>0) {
+			s.push("#f");
+		}
+	}else if(func == "zero?") {
+		if(args.size()>1) {
+			s.push("Error");
+			cout<<"Too many arguments."<<endl;
+		} else if(args[0]==0) {
+			s.push("#t");
+		} else if(args[0]!=0) {
+			s.push("#f");
 		}
 	}else{
 		cout << "Error: unrecognized math function" << endl;
