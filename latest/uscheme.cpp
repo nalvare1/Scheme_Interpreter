@@ -463,7 +463,9 @@ void mathEval(string func, int nargs, stack<string> &s){
 		for(int i=args.size()-2; i>=0; i--){
 			res /= args[i];
 		}
-		s.push(to_string(res));
+		stringstream result_stream;
+		result_stream << res;
+		s.push(result_stream.str());
 	}else if(func == "log"){
 		if(args.size() != 1) {
 			s.push(arg_error.str());
