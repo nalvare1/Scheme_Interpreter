@@ -569,5 +569,5 @@ bool string_is_number(string s){
 	if(s[0] == '-'){
 		s[0] = '0';
 	}
-	return !s.empty() && find_if(s.begin(), s.end(), [](char c) { return !isdigit(c); }) == s.end();
+	return !s.empty() && find_if(s.begin(), s.end(), [](char c) { return !isNumber(c); }) == s.end();
 }
