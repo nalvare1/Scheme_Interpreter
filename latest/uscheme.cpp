@@ -7,6 +7,7 @@
 #include<cstdio>
 #include<stdlib.h>
 #include<vector>
+#include<algorithm>
 #include "node.h"
 using namespace std;
 
@@ -20,6 +21,7 @@ void mathEval(string, int, stack<string> &);
 bool isApostrophe(char);
 bool isMathFunc(string);
 int gcd_func(int, int);
+bool string_is_number(string);
 
 int main(int argc, char* argv[]){
 	bool batchMode = false; //disable prompt
@@ -126,7 +128,7 @@ string parse_token(istream &is){
 				token += is.get();
 			}
 		}
-	}else if(isdigit(is.peek())){ //get whole number if digit encountered
+	}else if(isNumber(is.peek())){ //get whole number if digit encountered
 		token = is.get();
 		while(isNumber(is.peek())){
 			token += is.get();
@@ -143,7 +145,7 @@ string parse_token(istream &is){
 
 Node* parse_expression(istream &is){
 	string token;
-    token = parse_token(is); //get next token from stream
+	token = parse_token(is); //get next token from stream
 	if(!token[0])
 		return nullptr;
 	vector<Node*> children = {nullptr}; //initialize to one null child
@@ -176,12 +178,12 @@ bool isNumber(char c){ //includes period in order to include floats
 
 bool isMathFunc(string func){ //Will eventually include other math functions
 	return ( func == "+" || func == "-" || func == "*" || func == "/"
-	|| func == "sqrt" || func == "remainder" || func=="floor" || func=="ceiling"
-	|| func=="truncate" || func=="round" || func=="expt" || func == "sin" || func == "cos"
-	|| func == "tan" || func == "asin" || func == "acos" || func == "atan" || func =="equal?"
-	|| func == "gcd" || func == "lcm" || func == "quotient" || func == "log"
-	|| func == "positive?" || func == "negative?" || func=="zero?" || func == "odd?"
-	|| func == "even?" || func == "<" || func == ">");
+			|| func == "sqrt" || func == "remainder" || func=="floor" || func=="ceiling"
+			|| func=="truncate" || func=="round" || func=="expt" || func == "sin" || func == "cos"
+			|| func == "tan" || func == "asin" || func == "acos" || func == "atan" || func =="equal?"
+			|| func == "gcd" || func == "lcm" || func == "quotient" || func == "log"
+			|| func == "positive?" || func == "negative?" || func=="zero?" || func == "odd?"
+			|| func == "even?" || func == "<" || func == ">");
 }
 
 bool isApostrophe(char c) {
@@ -211,6 +213,10 @@ void evaluate_r(const Node *n, stack<string> &s){
 		s.push(n->value);
 	}else{
 		string func = n->value;
+		stringstream arg_error;
+		arg_error << func << ": Wrong number of arguments";
+		stringstream list_error;
+		list_error << func << ": Non-list argument passed to list function" << endl << "\t" << s.top();
 		//Check for different functions here!!
 		//Each function will find its arguments (# of args = nchildren)  on top of the stack
 		//and should push its return value to the stack
@@ -218,8 +224,42 @@ void evaluate_r(const Node *n, stack<string> &s){
 		//note: quote is not a function that belongs here because it deals with parsing so it's integrated into parse_expression
 		if(isMathFunc(func)){
 			mathEval(func, nchildren, s);
-		}else if(func=="some other func"){
-			//call some other func
+		}else if(func=="car"){
+			if(nchildren!=1){
+				s.push(arg_error.str());
+			}else if(s.top()[0] != '(' || s.top()[1] == ')'){
+				s.push(list_error.str());
+			}else{
+				stringstream ss(s.top());
+				s.pop();
+				parse_token(ss); //remove paren
+				s.push(parse_token(ss)); //push first element
+			}
+		}else if(func=="cdr"){
+			if(nchildren!=1){
+				s.push(arg_error.str());
+			}else if(s.top()[0] != '(' || s.top()[1] == ')'){
+				s.push(list_error.str());
+			}else{
+				string list = s.top();
+				s.pop();
+				size_t newlistBegin = 0;
+				while(list[newlistBegin] != ' '){
+					newlistBegin++;
+					if(newlistBegin >= list.length()){
+						s.push("()");
+						return;
+					}
+				}
+				newlistBegin++;
+				string newlist = list.substr(newlistBegin, BUFSIZ); 
+				newlist.insert(0, "(");
+				s.push(newlist);
+			}
+		}else{
+			stringstream ss;
+			ss << func << ": Unrecognized function";
+			s.push(ss.str());
 		}
 	}
 }
@@ -227,6 +267,13 @@ void evaluate_r(const Node *n, stack<string> &s){
 void mathEval(string func, int nargs, stack<string> &s){
 	vector<float> args;
 	for(int i=0; i<nargs; i++){
+		if(!string_is_number(s.top())){
+			stringstream ss;
+			ss << "Error: invalid argument to function: " << func;
+			ss << endl << "\t" << s.top();
+			s.push(ss.str());
+			return;
+		}
 		bool negative = false;
 		if(s.top()[0] == '-'){
 			s.top()[0] = '0';
@@ -239,153 +286,177 @@ void mathEval(string func, int nargs, stack<string> &s){
 		}
 		s.pop(); //remove arg from stack
 	}
-	float result; //does int math for now (regardless of input), we might change to float
+	stringstream arg_error;
+	arg_error << func << ": Wrong number of arguments";
+	float result; 
 	if(func=="+"){
 		result = 0;
 		for(size_t i=0; i<args.size(); i++){
 			result += args[i];
 		}
-		s.push(to_string(result));
+		stringstream result_stream;
+		result_stream << result;
+		s.push(result_stream.str());
 	}else if(func=="-"){
 		result = args.back();
 		for(int i=args.size()-2; i>=0; i--){ //backwards will be order of input - important for non-commutative function
 			result -= args[i];
 		}
-		s.push(to_string(result));
+		stringstream result_stream;
+		result_stream << result;
+		s.push(result_stream.str());
 	}else if(func=="*"){
 		result = 1;
 		for(size_t i=0; i<args.size(); i++){
 			result *= args[i];
 		}
-		s.push(to_string(result));
+		stringstream result_stream;
+		result_stream << result;
+		s.push(result_stream.str());
 	}else if(func=="/"){
 		result = args.back();
 		for(int i=args.size()-2; i>=0; i--){ //backwards will be order of input - important for non-commutative function
 			result /= args[i];
 		}
-		s.push(to_string(result));
+		stringstream result_stream;
+		result_stream << result;
+		s.push(result_stream.str());
 	}else if(func=="sqrt"){
 		if(args.size()>1){
-			cout<<"Too many arguments"<<endl;
-			s.push("Error");
+			s.push(arg_error.str());
 		}else{
 			result = args[0];
 			result = sqrt(result);
-			s.push(to_string(result));
+			stringstream result_stream;
+			result_stream << result;
+			s.push(result_stream.str());
 		}
 	}else if(func =="remainder") {
 		result = 0;
 		if(args.size() > 2) {
-			cout << "Too many arguments" << endl;
-			s.push("Error");
+			s.push(arg_error.str());
 		} else {
 			result = (int) args[1] % (int) args[0];
-			s.push(to_string(result));
+			stringstream result_stream;
+			result_stream << result;
+			s.push(result_stream.str());
 		}
 	}else if(func == "floor") {
 		if(args.size() > 1) {
-			s.push("Error");
-			cout << "Too many arguments" << endl;
+			s.push(arg_error.str());
 		} else {
-			s.push(to_string(floor(args[0])));
+			stringstream result_stream;
+			result_stream << floor(args[0]);
+			s.push(result_stream.str());
 		}
 	}else if(func == "ceiling") {
 		if(args.size() > 1) {
-			s.push("Error");
-			cout << "Too many arguments" << endl;
+			s.push(arg_error.str());
 		} else {
-			s.push(to_string(ceil(args[0])));
+			stringstream result_stream;
+			result_stream << ceil(args[0]);
+			s.push(result_stream.str());
 		}
 	}else if(func == "truncate") {
 		if(args.size() > 1) {
-			s.push("Error");
-			cout << "Too many arguments" << endl;
+			s.push(arg_error.str());
 		} else {
-			s.push(to_string(trunc(args[0])));
+			stringstream result_stream;
+			result_stream << trunc(args[0]);
+			s.push(result_stream.str());
 		}
 	}else if(func == "round") {
 		if(args.size() > 1) {
-			s.push("Error");
-			cout << "Too many arguments" << endl;
+			s.push(arg_error.str());
 		} else {
-			s.push(to_string(round(args[0])));
+			stringstream result_stream;
+			result_stream << round(args[0]);
+			s.push(result_stream.str());
 		}
 	}else if(func=="expt") {
 		if(args.size()>2) {
-			s.push("Error");
-			cout<<"Too many arguments"<<endl;
+			s.push(arg_error.str());
 		} else {
-			s.push(to_string(pow((double) args[1], (double) args[0])));
+			stringstream result_stream;
+			result_stream << pow((double) args[1], (double) args[0]);
+			s.push(result_stream.str());
 		}
 	}else if(func=="sin") {
 		if (args.size() > 1) {
-			s.push("Error");
-			cout << "Too many arguments" << endl;
+			s.push(arg_error.str());
 		} else {
-			s.push(to_string(sin(args[0])));
+			stringstream result_stream;
+			result_stream << sin(args[0]);
+			s.push(result_stream.str());
 		}
 	}else if(func == "cos") {
 		if (args.size() > 1) {
-			s.push("Error");
-			cout << "Too many arguments" << endl;
+			s.push(arg_error.str());
 		} else {
-			s.push(to_string(cos(args[0])));
+			stringstream result_stream;
+			result_stream << cos(args[0]);
+			s.push(result_stream.str());
 		}
 	}else if(func == "tan") {
 		if (args.size() > 1) {
-			s.push("Error");
-			cout << "Too many arguments" << endl;
+			s.push(arg_error.str());
 		} else {
-			s.push(to_string(tan(args[0])));
+			stringstream result_stream;
+			result_stream << tan(args[0]);
+			s.push(result_stream.str());
 		}
 	}else if(func == "asin") {
 		if (args.size() > 1) {
-			s.push("Error");
-			cout << "Too many arguments" << endl;
+			s.push(arg_error.str());
 		} else {
-			s.push(to_string(asin(args[0])));
+			stringstream result_stream;
+			result_stream << asin(args[0]);
+			s.push(result_stream.str());
 		}
 	}else if(func == "acos") {
 		if (args.size() > 1) {
-			s.push("Error");
-			cout << "Too many arguments" << endl;
+			s.push(arg_error.str());
 		} else {
-			s.push(to_string(acos(args[0])));
+			stringstream result_stream;
+			result_stream << acos(args[0]);
+			s.push(result_stream.str());
 		}
 	}else if(func == "atan") {
 		if (args.size() > 1) {
-			s.push("Error");
-			cout << "Too many arguments" << endl;
+			s.push(arg_error.str());
 		} else {
-			s.push(to_string(atan(args[0])));
+			stringstream result_stream;
+			result_stream << atan(args[0]);
+			s.push(result_stream.str());
 		}
 	}else if(func == "equal?") {
 		if(args.size() != 2) {
-			s.push("Error");
-			cout<<"Wrong number of arguments"<<endl;
+			s.push(arg_error.str());
 		} else {
 			if(args[0]==args[1]) s.push("#t");
 			else s.push("#f");
 		}
 	} else if(func == "gcd") {
 		if(args.size() != 2) {
-			s.push("Error");
-			cout << "Too many arguments" << endl;
+			s.push(arg_error.str());
 		} else {
 			int gcd = gcd_func(args[0], args[1]);
-			s.push(to_string(gcd));
+			stringstream result_stream;
+			result_stream << gcd;
+			s.push(result_stream.str());
 		}
 	} else if(func == "lcm") {
 		if(args.size() != 2) {
-			s.push("Error");
-			cout << "Too many arguments" << endl;
+			s.push(arg_error.str());
 		} else {
 			int a, b, lcm, gcd;
 			a = args[0];
 			b = args[1];
 			gcd = gcd_func(a, b);
 			lcm = (a * b) / gcd;
-			s.push(to_string(lcm));
+			stringstream result_stream;
+			result_stream << lcm;
+			s.push(result_stream.str());
 		}
 	}else if(func == "quotient"){
 		int res = args.back();
@@ -395,16 +466,16 @@ void mathEval(string func, int nargs, stack<string> &s){
 		s.push(to_string(res));
 	}else if(func == "log"){
 		if(args.size() != 1) {
-			s.push("Error");
-			cout << "Too many arguments" << endl;
+			s.push(arg_error.str());
 		}else{
 			double res = log(args[0]);
-			s.push(to_string(res));
+			stringstream result_stream;
+			result_stream << res;
+			s.push(result_stream.str());
 		}
 	}else if(func == "positive?") {
 		if(args.size()>1) {
-			s.push("Error");
-			cout<<"Too many arguments."<<endl;
+			s.push(arg_error.str());
 		} else if(args[0]>0) {
 			s.push("#t");
 		} else if(args[0]==0 || args[0]<0) {
@@ -412,8 +483,7 @@ void mathEval(string func, int nargs, stack<string> &s){
 		}
 	}else if(func == "negative?") {
 		if(args.size()>1) {
-			s.push("Error");
-			cout<<"Too many arguments."<<endl;
+			s.push(arg_error.str());
 		} else if(args[0]<0) {
 			s.push("#t");
 		} else if(args[0]==0 || args[0]>0) {
@@ -422,8 +492,7 @@ void mathEval(string func, int nargs, stack<string> &s){
 
 	}else if(func == "zero?") {
 		if(args.size()>1) {
-			s.push("Error");
-			cout<<"Too many arguments."<<endl;
+			s.push(arg_error.str());
 		} else if(args[0]==0) {
 			s.push("#t");
 		} else if(args[0]!=0) {
@@ -431,8 +500,7 @@ void mathEval(string func, int nargs, stack<string> &s){
 		}
 	}else if(func == "odd?") {
 		if(args.size()>1) {
-			s.push("Error");
-			cout<<"Too many arguments."<<endl;
+			s.push(arg_error.str());
 		} else if(floor(args[0])!=args[0]){
 			s.push("#f");
 		} else if((int)args[0] % 2 != 0) {
@@ -442,8 +510,7 @@ void mathEval(string func, int nargs, stack<string> &s){
 		}
 	}else if(func == "even?") {
 		if(args.size()>1 || floor(args[0])!=args[0]) {
-			s.push("Error");
-			cout<<"Too many arguments."<<endl;
+			s.push(arg_error.str());
 		} else if(floor(args[0])!=args[0]){
 			s.push("#f");
 		} else if((int)args[0] % 2 == 0) {
@@ -453,8 +520,7 @@ void mathEval(string func, int nargs, stack<string> &s){
 		}
 	} else if(func == "<") {
 		if(args.size()>2) {
-			s.push("Error");
-			cout<<"Too many arguments."<<endl;
+			s.push(arg_error.str());
 		} else if(args[0]>args[1]) {
 			s.push("#t");
 		} else {
@@ -462,16 +528,14 @@ void mathEval(string func, int nargs, stack<string> &s){
 		}
 	} else if(func == ">") {
 		if(args.size()>2) {
-			s.push("Error");
-			cout<<"Too many arguments."<<endl;
+			s.push(arg_error.str());
 		} else if(args[0]<args[1]) {
 			s.push("#t");
 		} else {
 			s.push("#f");
 		}
 	}else{
-		cout << "Error: unrecognized math function" << endl;
-		s.push("Error"); //if an error occurs push the word "Error" to the stack to avoid trying to access an empty stack in main
+		s.push("Error: unrecognized math function"); //if an error occurs push the error to the stack
 	}
 }
 
@@ -499,4 +563,11 @@ int gcd_func(int arg1, int arg2) {
 	}
 	//last d is the gcd!!
 	return d;
+}
+
+bool string_is_number(string s){
+	if(s[0] == '-'){
+		s[0] = '0';
+	}
+	return !s.empty() && find_if(s.begin(), s.end(), [](char c) { return !isdigit(c); }) == s.end();
 }
