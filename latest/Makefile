@@ -2,6 +2,7 @@ CMP = g++ -std=c++11
 MAIN = uscheme
 CLASS = node
 EXEC = scheme
+SHELL = bash
 
 $(EXEC): $(MAIN).o $(CLASS).o
 	$(CMP) $(MAIN).o $(CLASS).o -o $(EXEC)
@@ -15,3 +16,7 @@ $(CLASS).o: $(CLASS).cpp $(CLASS).h
 clean:
 	rm *.o
 	rm $(EXEC)
+
+test:
+	@echo Testing Scheme Interpreter...
+	@diff --suppress-common-lines -y <(./scheme -b < input.txt) output.txt

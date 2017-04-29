@@ -511,7 +511,7 @@ void mathEval(string func, int nargs, stack<string> &s){
 			s.push("#f");
 		}
 	}else if(func == "even?") {
-		if(args.size()>1 || floor(args[0])!=args[0]) {
+		if(args.size()>1) {
 			s.push(arg_error.str());
 		} else if(floor(args[0])!=args[0]){
 			s.push("#f");
